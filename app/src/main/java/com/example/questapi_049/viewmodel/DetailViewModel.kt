@@ -14,7 +14,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface DetailUiState {
-    data class Success(val dataSiswa: DataSiswa) : DetailUiState
+    data class Success(val siswa: DataSiswa) : DetailUiState
     object Error : DetailUiState
     object Loading : DetailUiState
 }
@@ -24,24 +24,22 @@ class DetailViewModel(
     private val repositoryDataSiswa: RepositoryDataSiswa
 ) : ViewModel() {
 
+    private val _idSiswa: Int = checkNotNull(savedStateHandle[DestinasiDetail.idSiswa])
     var detailUiState: DetailUiState by mutableStateOf(DetailUiState.Loading)
         private set
 
-    private val _id: Int = checkNotNull(savedStateHandle[DestinasiDetail.idArg])
-
     init {
-        getDetailSiswa()
+        getSatuSiswa()
     }
 
-    fun getDetailSiswa() {
+    fun getSatuSiswa() {
         viewModelScope.launch {
             detailUiState = DetailUiState.Loading
             detailUiState = try {
-                val data = repositoryDataSiswa.getSatuSiswa(_id)
-                DetailUiState.Success(data)
+                DetailUiState.Success(repositoryDataSiswa.getSatuSiswa(_idSiswa))
             } catch (e: IOException) {
                 DetailUiState.Error
-            } catch (e: HttpException) {
+            } catch (e: Exception) {
                 DetailUiState.Error
             }
         }
@@ -50,11 +48,9 @@ class DetailViewModel(
     fun deleteSiswa() {
         viewModelScope.launch {
             try {
-                repositoryDataSiswa.deleteDataSiswa(_id)
-            } catch (e: IOException) {
-                DetailUiState.Error
-            } catch (e: HttpException) {
-                DetailUiState.Error
+                repositoryDataSiswa.deleteSiswa(_idSiswa)
+            } catch (e: Exception) {
+                // Handle error
             }
         }
     }
