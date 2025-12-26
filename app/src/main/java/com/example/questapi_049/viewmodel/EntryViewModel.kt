@@ -10,7 +10,6 @@ import com.example.questapi_049.modeldata.toDataSiswa
 import com.example.questapi_049.repositori.RepositoryDataSiswa
 import okhttp3.Response
 
-
 class EntryViewModel(private val repositoryDataSiswa: RepositoryDataSiswa) : ViewModel() {
     var uiStateSiswa by mutableStateOf(UIStateSiswa())
         private set
