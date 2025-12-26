@@ -22,6 +22,6 @@ interface ServiceApiSiswa {
     @PUT("editTM.php")
     suspend fun editSatuSiswa(@Query("id") id: Int, @Body dataSiswa: DataSiswa): Response<Void>
 
-
-
+    @DELETE("deleteTM.php")
+    suspend fun hapusSatuSiswa(@Query("id") id: Int): Response<Void>
 }
