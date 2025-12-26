@@ -15,3 +15,7 @@ class EditViewModel(
             editUiState = repositoryDataSiswa.getSatuSiswa(_id).toUiStateSiswa(true)
         }
     }
+
+    fun updateUiState(detailSiswa: DetailSiswa) {
+        editUiState = UIStateSiswa(detailSiswa = detailSiswa, isEntryValid = validasiInput(detailSiswa))
+    }
