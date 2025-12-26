@@ -12,7 +12,7 @@ import okio.IOException
 import retrofit2.HttpException
 
 sealed interface StatusUiSiswa {
-    data class Success(val siswa: List<DataSiswa>) : StatusUiSiswa
+    data class Success(val siswa: List<DataSiswa> = listOf()) : StatusUiSiswa
     object Error : StatusUiSiswa
     object Loading : StatusUiSiswa
 }
