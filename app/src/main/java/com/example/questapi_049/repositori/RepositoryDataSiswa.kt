@@ -9,6 +9,7 @@ interface RepositoryDataSiswa {
 
     suspend fun getSatuSiswa(id: Int): DataSiswa
     suspend fun updateDataSiswa(id: Int, dataSiswa: DataSiswa): Response<Void>
+    suspend fun deleteDataSiswa(id: Int): Response<Void>
 }
 
 class JaringanRepositoryDataSiswa(
