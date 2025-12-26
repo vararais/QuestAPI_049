@@ -13,3 +13,10 @@ object DestinasiDetail : DestinasiNavigasi {
     const val idArg = "id"
     val routeWithArgs = "$route/{$idArg}"
 }
+
+object DestinasiEdit : DestinasiNavigasi {
+    override val route = "edit"
+    override val titleRes = R.string.edit_siswa
+    const val idArg = "id"
+    val routeWithArgs = "$route/{$idArg}"
+}
