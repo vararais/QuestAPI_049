@@ -25,3 +25,10 @@ class EditViewModel(
             nama.isNotBlank() && alamat.isNotBlank() && telpon.isNotBlank()
         }
     }
+
+    suspend fun updateSiswa() {
+        if (validasiInput(editUiState.detailSiswa)) {
+            repositoryDataSiswa.updateDataSiswa(_id, editUiState.detailSiswa.toDataSiswa())
+        }
+    }
+}
