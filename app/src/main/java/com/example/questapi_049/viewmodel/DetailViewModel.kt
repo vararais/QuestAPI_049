@@ -21,3 +21,17 @@ class DetailViewModel(
     init {
         getDetailSiswa()
     }
+
+    fun getDetailSiswa() {
+        viewModelScope.launch {
+            detailUiState = DetailUiState.Loading
+            detailUiState = try {
+                val data = repositoryDataSiswa.getSatuSiswa(_id)
+                DetailUiState.Success(data)
+            } catch (e: IOException) {
+                DetailUiState.Error
+            } catch (e: HttpException) {
+                DetailUiState.Error
+            }
+        }
+    }
