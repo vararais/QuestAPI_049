@@ -5,8 +5,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.questapi_049.modeldata.DataSiswa
@@ -18,118 +20,147 @@ import com.example.questapi_049.viewmodel.provider.PenyediaViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    navigateBack: () -> Unit,
     navigateToEditItem: (Int) -> Unit,
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val uiState = viewModel.detailUiState
+    var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             SiswaTopAppBar(
                 title = "Detail Siswa",
                 canNavigateBack = true,
-                scrollBehavior = scrollBehavior,
                 navigateUp = navigateBack
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val state = viewModel.detailUiState
-                    if (state is DetailUiState.Success) {
-                        navigateToEditItem(state.dataSiswa.id)
+                    if (uiState is DetailUiState.Success) {
+                        navigateToEditItem(uiState.siswa.id)
                     }
                 },
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.padding(18.dp)
             ) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Siswa")
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Siswa"
+                )
             }
-        }
+        },
+        modifier = modifier
     ) { innerPadding ->
-        DetailStatus(
-            detailUiState = viewModel.detailUiState,
-            retryAction = { viewModel.getDetailSiswa() },
+        BodyDetailSiswa(
+            detailUiState = uiState,
+            // Fungsi untuk reload data jika error (retry)
+            retryAction = { viewModel.getSatuSiswa() },
             modifier = Modifier.padding(innerPadding),
             onDeleteClick = {
-                viewModel.deleteSiswa()
-                navigateBack()
+                deleteConfirmationRequired = true
             }
         )
+
+        if (deleteConfirmationRequired) {
+            DeleteConfirmationDialog(
+                onDeleteConfirm = {
+                    viewModel.deleteSiswa()
+                    deleteConfirmationRequired = false
+                    navigateBack()
+                },
+                onDeleteCancel = {
+                    deleteConfirmationRequired = false
+                }
+            )
+        }
     }
 }
 
 @Composable
-fun DetailStatus(
+fun BodyDetailSiswa(
     detailUiState: DetailUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
     onDeleteClick: () -> Unit
 ) {
     when (detailUiState) {
-        is DetailUiState.Loading -> OnLoading(modifier = modifier.fillMaxSize())
+        is DetailUiState.Loading -> {
+            OnLoading(modifier = modifier.fillMaxSize())
+        }
         is DetailUiState.Success -> {
-            ItemDetailMhs(
-                dataSiswa = detailUiState.dataSiswa,
-                modifier = modifier.fillMaxWidth(),
-                onDeleteClick = onDeleteClick
+            Column(
+                modifier = modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ItemDetailSiswa(
+                    siswa = detailUiState.siswa,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedButton(
+                    onClick = onDeleteClick,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Delete")
+                }
+            }
+        }
+        is DetailUiState.Error -> {
+            // Memanggil OnError dari HalamanHome.kt
+            OnError(
+                retryAction = retryAction,
+                modifier = modifier.fillMaxSize()
             )
         }
-        is DetailUiState.Error -> OnError(retryAction, modifier = modifier.fillMaxSize())
     }
 }
 
-
 @Composable
-fun ItemDetailMhs(
-    modifier: Modifier = Modifier,
-    dataSiswa: DataSiswa,
-    onDeleteClick: () -> Unit
+fun ItemDetailSiswa(
+    siswa: DataSiswa,
+    modifier: Modifier = Modifier
 ) {
-    var deleteConfirmationRequired by remember { mutableStateOf(false) }
     Card(
-        modifier = modifier.padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ComponentDetailMhs(judul = "Nama", isinya = dataSiswa.nama)
-            ComponentDetailMhs(judul = "Alamat", isinya = dataSiswa.alamat)
-            ComponentDetailMhs(judul = "No. Telpon", isinya = dataSiswa.telpon)
-
-            Spacer(modifier = Modifier.padding(8.dp))
-            Button(
-                onClick = { deleteConfirmationRequired = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            ) {
-                Text(text = "Delete")
-            }
-
-            if (deleteConfirmationRequired) {
-                DeleteConfirmationDialog(
-                    onDeleteConfirm = {
-                        deleteConfirmationRequired = false
-                        onDeleteClick()
-                    },
-                    onDeleteCancel = { deleteConfirmationRequired = false }
-                )
-            }
+            ComponentDetailSiswa(judul = "ID", isinya = siswa.id.toString())
+            ComponentDetailSiswa(judul = "Nama", isinya = siswa.nama)
+            ComponentDetailSiswa(judul = "Alamat", isinya = siswa.alamat)
+            ComponentDetailSiswa(judul = "Telpon", isinya = siswa.telpon)
         }
     }
 }
 
 @Composable
-fun ComponentDetailMhs(judul: String, isinya: String) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(text = judul, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        Text(text = isinya, style = MaterialTheme.typography.bodyLarge)
-        Divider()
+fun ComponentDetailSiswa(
+    judul: String,
+    isinya: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = judul,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = isinya,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
@@ -145,10 +176,14 @@ private fun DeleteConfirmationDialog(
         text = { Text("Apakah anda yakin ingin menghapus data ini?") },
         modifier = modifier,
         dismissButton = {
-            TextButton(onClick = onDeleteCancel) { Text(text = "Cancel") }
+            TextButton(onClick = onDeleteCancel) {
+                Text("Cancel")
+            }
         },
         confirmButton = {
-            TextButton(onClick = onDeleteConfirm) { Text(text = "Yes") }
+            TextButton(onClick = onDeleteConfirm) {
+                Text("Yes")
+            }
         }
     )
 }
