@@ -3,21 +3,23 @@ package com.example.questapi_049.uicontroller
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.questapi_049.uicontroller.route.DestinasiDetail
+import com.example.questapi_049.uicontroller.route.DestinasiEdit
 import com.example.questapi_049.uicontroller.route.DestinasiEntry
 import com.example.questapi_049.uicontroller.route.DestinasiHome
+import com.example.questapi_049.uicontroller.view.DetailScreen
 import com.example.questapi_049.uicontroller.view.EntrySiswaScreen
 import com.example.questapi_049.uicontroller.view.HomeScreen
+import com.example.questapi_049.uicontroller.view.ItemEditScreen
 
 @Composable
-fun DataSiswaApp(
-    navController: NavHostController = rememberNavController(),
-    modifier: Modifier = Modifier
-) {
-    HostNavigasi(navController = navController, modifier = modifier)
+fun DataSiswaApp(navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier) {
+    HostNavigasi(navController = navController)
 }
 
 @Composable
@@ -28,39 +30,45 @@ fun HostNavigasi(
     NavHost(
         navController = navController,
         startDestination = DestinasiHome.route,
-        modifier = modifier
+        modifier = Modifier
     ) {
-        // Halaman Home
         composable(DestinasiHome.route) {
             HomeScreen(
                 navigateToItemEntry = { navController.navigate(DestinasiEntry.route) },
-                onDetailClick = { id ->
-                    navController.navigate("${DestinasiDetail.route}/$id")
+                onDetailClick = { itemId ->
+                    navController.navigate("${DestinasiDetail.route}/$itemId")
                 }
             )
         }
-        // Halaman Entry Siswa
         composable(DestinasiEntry.route) {
-            EntrySiswaScreen(navigateBack = { navController.navigate(DestinasiHome.route) })
+            EntrySiswaScreen(
+                navigateBack = { navController.navigate(DestinasiHome.route) {
+                    popUpTo(DestinasiHome.route) { inclusive = true }
+                } }
+            )
         }
+
         composable(
-            DestinasiDetail.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiDetail.idArg) { type = NavType.IntType })
+            route = DestinasiDetail.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiDetail.idSiswa) { type = NavType.IntType })
         ) {
             DetailScreen(
-                navigateBack = { navController.navigateUp() },
-                navigateToEditItem = { id ->
-                    navController.navigate("${DestinasiEdit.route}/$id")
+                navigateBack = { navController.popBackStack() },
+                navigateToEditItem = { itemId ->
+                    navController.navigate("${DestinasiEdit.route}/$itemId")
                 }
             )
         }
+
         composable(
-            DestinasiEdit.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiEdit.idArg) { type = NavType.IntType })
+            route = DestinasiEdit.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiEdit.idSiswa) { type = NavType.IntType })
         ) {
             ItemEditScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() }
             )
         }
+
     }
+}
