@@ -7,6 +7,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.questapi_049.repositori.AplikasiDataSiswa
 import com.example.questapi_049.viewmodel.EntryViewModel
 import com.example.questapi_049.viewmodel.HomeViewModel
+import com.example.questapi_049.viewmodel.DetailViewModel
+import com.example.questapi_049.viewmodel.EditViewModel
+import androidx.lifecycle.createSavedStateHandle
 
 fun CreationExtras.aplikasiDataSiswa(): AplikasiDataSiswa =
     (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as AplikasiDataSiswa)
@@ -32,7 +35,5 @@ object PenyediaViewModel {
                 aplikasiDataSiswa().container.repositoryDataSiswa
             )
         }
-    }
-}
     }
 }
