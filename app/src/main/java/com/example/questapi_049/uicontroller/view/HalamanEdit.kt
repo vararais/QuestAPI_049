@@ -23,21 +23,18 @@ fun ItemEditScreen(
     viewModel: EditViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             SiswaTopAppBar(
                 title = "Edit Siswa",
                 canNavigateBack = true,
-                navigateUp = onNavigateUp,
-                scrollBehavior = scrollBehavior
+                navigateUp = onNavigateUp
             )
         }
     ) { innerPadding ->
         EntryBody(
-            uiStateSiswa = viewModel.editUiState,
+            uiStateSiswa = viewModel.uiStateSiswa,
             onSiswaValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
