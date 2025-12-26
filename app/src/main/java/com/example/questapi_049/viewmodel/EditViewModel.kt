@@ -1,5 +1,19 @@
 package com.example.questapi_049.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.questapi_049.modeldata.DetailSiswa
+import com.example.questapi_049.modeldata.UIStateSiswa
+import com.example.questapi_049.modeldata.toDataSiswa
+import com.example.questapi_049.modeldata.toUiStateSiswa
+import com.example.questapi_049.repositori.RepositoryDataSiswa
+import com.example.questapi_049.uicontroller.route.DestinasiEdit
+import kotlinx.coroutines.launch
+
 class EditViewModel(
     savedStateHandle: SavedStateHandle,
     private val repositoryDataSiswa: RepositoryDataSiswa
