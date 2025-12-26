@@ -48,11 +48,12 @@ import com.example.questapi_049.viewmodel.provider.PenyediaViewModel
 @Composable
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
-    navigateToUpdate: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onDetailClick: (Int) -> Unit = {},
     viewModel: HomeViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -66,70 +67,57 @@ fun HomeScreen(
             FloatingActionButton(
                 onClick = navigateToItemEntry,
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
+                modifier = Modifier.padding(20.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.entry_siswa)
-                )
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Siswa")
             }
-        },
+        }
     ) { innerPadding ->
-        HomeBody(
-            statusSiswa = viewModel.listSiswa,
-            onSiswaClick = navigateToUpdate,
-            retryAction = viewModel::loadSiswa,
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
+        HomeStatus(
+            homeUiState = viewModel.listSiswa,
+            retryAction = { viewModel.loadSiswa() },
+            modifier = Modifier.padding(innerPadding),
+            onDetailClick = onDetailClick
         )
     }
 }
 
 @Composable
-fun HomeBody(
-    statusSiswa: StatusUiSiswa,
-    onSiswaClick: (Int) -> Unit,
+fun HomeStatus(
+    homeUiState: StatusUiSiswa,
     retryAction: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDetailClick: (Int) -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        when (statusSiswa) {
-            is StatusUiSiswa.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
-            is StatusUiSiswa.Success -> DaftarSiswa(
-                listSiswa = statusSiswa.siswa,
-                onSiswaClick = onSiswaClick,
-                modifier = Modifier.fillMaxWidth()
-            )
-            is StatusUiSiswa.Error -> ErrorScreen(
-                retryAction,
-                modifier = Modifier.fillMaxSize()
-            )
+    when (homeUiState) {
+        is StatusUiSiswa.Loading -> OnLoading(modifier = modifier.fillMaxSize())
+        is StatusUiSiswa.Success -> {
+            if (homeUiState.siswa.isEmpty()) {
+                Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Tidak ada data")
+                }
+            } else {
+                HomeBody(
+                    listSiswa = homeUiState.siswa,
+                    onDetailClick = onDetailClick,
+                    modifier = modifier.fillMaxWidth()
+                )
+            }
         }
+        is StatusUiSiswa.Error -> OnError(retryAction, modifier = modifier.fillMaxSize())
     }
 }
 
 @Composable
-fun LoadingScreen(modifier: Modifier = Modifier) {
-    Image(
-        modifier = modifier.size(200.dp),
-        painter = painterResource(R.drawable.loading_img),
-        contentDescription = stringResource(R.string.loading)
-    )
-}
-
-@Composable
-fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
+fun OnError(retryAction: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = ""
+            painter = painterResource(id = R.drawable.image_1584),
+            contentDescription = ""
         )
         Text(text = stringResource(R.string.gagal), modifier = Modifier.padding(16.dp))
         Button(onClick = retryAction) {
@@ -139,25 +127,29 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DaftarSiswa(
+fun HomeBody(
     listSiswa: List<DataSiswa>,
-    onSiswaClick: (Int) -> Unit,
+    onDetailClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier) {
-        items(items = listSiswa, key = { it.id }) { person ->
-            SiswaItem(
-                siswa = person,
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(listSiswa, key = { it.id }) { siswa ->
+            SiswaCard(
+                siswa = siswa,
                 modifier = Modifier
-                    .padding(dimensionResource(id = R.dimen.padding_small))
-                    .clickable { onSiswaClick(person.id) }
+                    .fillMaxWidth()
+                    .clickable { onDetailClick(siswa.id) }
             )
         }
     }
 }
 
 @Composable
-fun SiswaItem(
+fun SiswaCard(
     siswa: DataSiswa,
     modifier: Modifier = Modifier
 ) {
@@ -166,8 +158,8 @@ fun SiswaItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -192,4 +184,13 @@ fun SiswaItem(
             )
         }
     }
+}
+
+@Composable
+fun OnLoading(modifier: Modifier = Modifier) {
+    Image(
+        modifier = modifier.size(100.dp),
+        painter = painterResource(R.drawable.loading_img),
+        contentDescription = stringResource(R.string.loading)
+    )
 }
