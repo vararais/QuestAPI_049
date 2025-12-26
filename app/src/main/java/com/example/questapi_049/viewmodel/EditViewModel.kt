@@ -19,30 +19,24 @@ class EditViewModel(
     private val repositoryDataSiswa: RepositoryDataSiswa
 ) : ViewModel() {
 
-    var editUiState by mutableStateOf(UIStateSiswa())
+    var uiStateSiswa by mutableStateOf(UIStateSiswa())
         private set
 
-    private val _id: Int = checkNotNull(savedStateHandle[DestinasiEdit.idArg])
+    private val itemId: Int = checkNotNull(savedStateHandle[DestinasiEdit.idSiswa])
 
     init {
         viewModelScope.launch {
-            editUiState = repositoryDataSiswa.getSatuSiswa(_id).toUiStateSiswa(true)
+            uiStateSiswa = repositoryDataSiswa.getSatuSiswa(itemId).toUiStateSiswa(true)
         }
     }
 
     fun updateUiState(detailSiswa: DetailSiswa) {
-        editUiState = UIStateSiswa(detailSiswa = detailSiswa, isEntryValid = validasiInput(detailSiswa))
-    }
-
-    private fun validasiInput(uiState: DetailSiswa = editUiState.detailSiswa): Boolean {
-        return with(uiState) {
-            nama.isNotBlank() && alamat.isNotBlank() && telpon.isNotBlank()
-        }
+        uiStateSiswa = UIStateSiswa(detailSiswa = detailSiswa, isEntryValid = true)
     }
 
     suspend fun updateSiswa() {
-        if (validasiInput(editUiState.detailSiswa)) {
-            repositoryDataSiswa.updateDataSiswa(_id, editUiState.detailSiswa.toDataSiswa())
+        if (uiStateSiswa.isEntryValid) {
+            repositoryDataSiswa.updateSiswa(itemId, uiStateSiswa.detailSiswa.toDataSiswa())
         }
     }
 }
